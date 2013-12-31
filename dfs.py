@@ -33,25 +33,19 @@ class DirectedGraph:
     # Output: Note that nodes with the same low number form a cycle
     def dfs(self, start, _parent=None, _tree_edges=None,
             _back_edges=None, _pre=None, _low=None, _count=0):
-        if start not in self.adj:
+        if start not in self.vertices:
             return None, None, None, None, None
         if _parent == None:
-            _tree_edges = []
-            _back_edges = []
-            _pre = {}
-            _low = {}
-        _pre[start] = _count
-        _low[start] = _count
+            _tree_edges, _back_edges = [], []
+            _pre, _low = {}, {}
+        _pre[start], _low[start] = _count, _count
+        # search as much as we can from the starting vertex
         for v in self.adj[start]:
             if v not in _pre: # not visited before
                 _tree_edges.append((start,v))
-                _tree_edges, _back_edges, _pre, _low, _count = self.dfs(v,
-                                                                   start,
-                                                                   _tree_edges,
-                                                                   _back_edges,
-                                                                   _pre,
-                                                                   _low,
-                                                                   _count+1)
+                _count, _, _, _, _ = self.dfs(v, start, _tree_edges,
+                                              _back_edges,_pre, _low,
+                                              _count+1)
                 _low[start] = min(_low[start],_low[v])
             else:
                 if not (self.edgeInList((start,v), _tree_edges) or
@@ -59,7 +53,7 @@ class DirectedGraph:
                     _back_edges.append((start,v))
                 if v != _parent:
                     _low[start] = min(_low[start],_pre[v])
-        return _tree_edges, _back_edges, _pre, _low, _count
+        return _count, _tree_edges, _back_edges, _pre, _low
 
 class Graph(DirectedGraph):
     def addEdge(self, u, v):
@@ -70,7 +64,7 @@ class Graph(DirectedGraph):
     def edgeInList(edge, l):
         return (edge in l) or ((edge[1],edge[0]) in l)
 
-def printResults(t, b, p, l, _):
+def printResults(_, t, b, p, l):
     print("Tree edges: {}".format(t))
     print("Back edges: {}".format(b))
     print("Prenumbers: {}".format(p))
@@ -84,8 +78,11 @@ def main():
     graph.addEdge('b','c')
     graph.addEdge('c','d')
     graph.addEdge('d','b')
+    graph.addEdge('e','f')
     print("DFS('a') on small graph ======================================")
     printResults(*graph.dfs('a'))
+    print("DFS('e') on same graph ======================================")
+    printResults(*graph.dfs('e'))
     for d in range(2,6):
         print("DFS(2) on K{} ================================================="
               .format(d))
